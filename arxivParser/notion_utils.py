@@ -24,7 +24,6 @@ def query_database(query, database_id=os.environ.get('NOTION_DATABASE_ID')):
         }
     )
 
-
 def set_page_curated(page_id, database_id=os.environ.get('NOTION_DATABASE_ID')):
     notion = get_notion_service()
     notion.pages.update(
@@ -286,42 +285,3 @@ def update_arxiv_papers():
                 ]
             }
         }, db_id)
-
-def old():
-    ...
-    # Getting training data
-    # db_id = '497c9ac09b994b37af4a5fb43137bfb3' 
-    # pages  = get_all_arxiv_pages(db_id)['results']
-    # print(f"Retrieved {len(pages)} pages from the database")
-
-    # for page in pages:
-    #     title = page['properties']['Title']['rich_text'][0]['plain_text']
-    #     abstract = page['properties']['Abstract']['rich_text'][0]['plain_text']
-    #     architecture = [p['name'] for p in page['properties']['Architecture']['multi_select']]
-    #     date = page['properties']['Date']['date']['start']
-    #     tags = page['properties']['Tags']['multi_select']
-    #     parameters = page['properties']['Parameters']['rich_text'][0]['plain_text'] if page['properties']['Parameters']['rich_text'] else ""
-    #     dataset = page['properties']['Dataset']['rich_text'][0]['plain_text'] if page['properties']['Dataset']['rich_text'] else ""
-    #     task = page['properties']['Task']['multi_select']
-    #     paper = page['properties']['Paper']['url']
-    #     repository = page['properties']['Repository']['url']
-    #     notes = page['properties']['Notes']['rich_text'][0]['plain_text'] if page['properties']['Notes']['rich_text'] else ""
-
-    #     papers.append(NotionEntry(
-    #         title=title,
-    #         abstract=abstract,
-    #         architecture=architecture,
-    #         date=date,
-    #         tags=tags,
-    #         parameters=parameters,
-    #         dataset=dataset,
-    #         task=task,
-    #         paper=paper,
-    #         repository=repository,
-    #         notes=notes
-    #     ))
-
-    # print(f"Retrieved {len(papers)} papers from the database")
-    # for paper in papers:
-    #     if not get_page_by_doi(paper.paper)['results']:
-    #         create_notion_entry(paper.as_dict())

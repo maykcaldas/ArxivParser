@@ -28,6 +28,7 @@ class ClassifierLM(dspy.Module):
     def forward(self, title, abstract):
         return self.cot(title=title, abstract=abstract)
 
+#TODO: Should I use retrieval here? All examples in the context would be positive examples.
 
 class ArchitectureSignature(dspy.Signature):
     """Predicts the architecture of the language model discussed in an arXiv paper."""
@@ -44,15 +45,23 @@ class ArchitectureLM(dspy.Module):
     def forward(self, title, abstract):
         return self.cot(title=title, abstract=abstract)
 
+def get_LM(model='gpt-3.5-turbo-instruct', data=None, pipeline = None, build_db = False):
+    pipelines={
+        'classifier': ClassifierLM,
+        'architecture': ArchitectureLM
+    }
 
-def get_LM(model='gpt-3.5-turbo-instruct', trainset = None, valset = None, pipeline = None):
+    if pipeline not in pipelines:
+        raise ValueError(f"Pipeline {pipeline} not found. Available pipelines: {pipelines.keys()}")
+    
+    dataset = [dspy.Example(x).with_inputs('title', 'abstract') for x in data.to_dict(orient='records')]
+
     lm = dspy.OpenAI(model=model)
     dspy.settings.configure(lm=lm)
     
     tp = LabeledFewShot(k=5)
     # tp = BootstrapFewShotWithRandomSearch(metric=answer_exact_match)
-    dataset = [dspy.Example(x).with_inputs('title', 'abstract') for x in trainset.to_dict(orient='records')]
-    bootstrap = tp.compile(pipeline(), trainset=dataset)#, valset=valset)
+    bootstrap = tp.compile(pipelines[pipeline](), trainset=dataset)#, valset=valset)
     return bootstrap
 
 def main():

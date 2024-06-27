@@ -3,21 +3,21 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import pandas as pd
-from Paper import Paper
+from Paper import ArxivPaper
 from NotionPage import NotionPage
 from google_utils import get_arxiv_content
 from notion_utils import (create_page, 
                           get_page_by_doi,
                           get_all_curated_pages,
                           )
-from lm_utils import get_LM, ClassifierLM, ArchitectureLM
+from lm_utils import get_LM
+from github_utils import open_issue_on_repo
 
 def main():
     papers=[]
     for n in get_arxiv_content(15):
-        # print(n)
         if n['title']:
-            papers.append(Paper(
+            papers.append(ArxivPaper(
                 title=n['title'],
                 authors=n['authors'],
                 categories=n['categories'],
@@ -37,23 +37,20 @@ def main():
     train_df['architecture'] = train_df['architecture'].apply(lambda x: ",".join([e['name'] for e in x if x]))
     print(f"Retrieved {len(train_df)} pages from the database for training")
 
-    arch_lm = get_LM(trainset=train_df, pipeline=ArchitectureLM)
-
-    for paper in papers[9:10]:
-        print(paper.title)
-        print(paper.abstract)
-        pred = arch_lm(title=paper.title, abstract=paper.abstract)
-        print(pred)
     # Process papers
+    arch_lm = get_LM(trainset=train_df, pipeline="classifier")
+
+    for paper in papers[6:10]:
+        pred = arch_lm(title=paper.title, abstract=paper.abstract)
+        if pred.is_lm_paper == "Yes":
+            open_issue_on_repo("maykcaldas/LLMs-in-science", f"New paper: {paper.title}", f"Paper: {paper.title}\n\nAuthors: {paper.authors}\n\nAbstract: {paper.abstract}\n\nLink: {paper.doi}")
 
     # Create notion pages
 
     # Populate db
-
-    # for paper in papers:
-    #     # print(paper)
-    #     if not get_page_by_doi(paper.doi):
-    #         create_page(paper.as_dict())
+    for paper in papers:
+        if not get_page_by_doi(paper.doi):
+            create_page(paper.as_dict())
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,20 @@
 class NotionPage:
-    def __init__(self, doi, title, abstract, architecture, date, paper, repository, notes="", tags="", parameters="", dataset="", task="", curated=False):
+    def __init__(self, 
+                    doi, 
+                    title, 
+                    abstract, 
+                    architecture, 
+                    date, 
+                    paper, 
+                    repository, 
+                    notes="", 
+                    tags="", 
+                    parameters="", 
+                    dataset="", 
+                    task="", 
+                    curated=False
+                    ):
+        self.doi = doi
         self.title = title
         self.abstract = abstract
         self.architecture = architecture
@@ -12,7 +27,6 @@ class NotionPage:
         self.repository = repository
         self.notes = notes
         self.curated = curated
-        self.doi = doi
 
     def as_dict(self):
         return self.__dict__

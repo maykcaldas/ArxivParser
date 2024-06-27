@@ -1,5 +1,12 @@
 class Paper:
-    def __init__(self, title, authors, categories, abstract, doi, date):
+    def __init__(self, 
+                 title, 
+                 authors, 
+                 categories, 
+                 abstract, 
+                 doi, 
+                 date
+                 ):
         self.title = title
         self.authors = authors
         self.categories = categories.split()
@@ -19,8 +26,12 @@ class Paper:
         }
 
     def __str__(self):
-        return f"ArXiv paper: {self.authors}. {self.title}. {self.categories}. {self.doi}. {self.date}"
+        return f"Paper: {self.authors}. {self.title}. {self.categories}. {self.doi}. {self.date}"
     
     def __repr__(self):
         return self.__str__()
     
+
+class ArxivPaper(Paper):
+    def __str__(self):
+        return f"ArXiv Paper: {self.authors}. {self.title}. {self.categories}. {self.doi}. {self.date}"
