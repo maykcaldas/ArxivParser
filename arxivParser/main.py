@@ -38,7 +38,7 @@ def main():
     print(f"Retrieved {len(train_df)} pages from the database for training")
 
     # Process papers
-    arch_lm = get_LM(trainset=train_df, pipeline="classifier")
+    arch_lm = get_LM(data=train_df, pipeline="classifier")
 
     for paper in papers[6:10]:
         pred = arch_lm(title=paper.title, abstract=paper.abstract)
