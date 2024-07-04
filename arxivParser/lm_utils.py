@@ -45,7 +45,7 @@ class ArchitectureLM(dspy.Module):
     def forward(self, title, abstract):
         return self.cot(title=title, abstract=abstract)
 
-def get_LM(model='gpt-3.5-turbo-instruct', data=None, pipeline = None, build_db = False):
+def get_LM(model='gpt-4o', data=None, pipeline = None, build_db = False):
     pipelines={
         'classifier': ClassifierLM,
         'architecture': ArchitectureLM

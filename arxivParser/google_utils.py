@@ -86,7 +86,6 @@ def get_email_content(n):
             if 'no-reply@arxiv.org' in from_header:
                 data = msg['payload']['body']['data']
                 content = base64.urlsafe_b64decode(data.encode('ASCII')).decode('utf-8')
-                # print("Content from no-reply@arxiv.org:")
                 yield content
 
 

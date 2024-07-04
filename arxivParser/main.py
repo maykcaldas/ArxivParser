@@ -40,10 +40,10 @@ def main():
     # Process papers
     arch_lm = get_LM(data=train_df, pipeline="classifier")
 
-    for paper in papers[6:10]:
+    for paper in papers:
         pred = arch_lm(title=paper.title, abstract=paper.abstract)
         if pred.is_lm_paper == "Yes":
-            open_issue_on_repo("maykcaldas/LLMs-in-science", f"New paper: {paper.title}", f"Paper: {paper.title}\n\nAuthors: {paper.authors}\n\nAbstract: {paper.abstract}\n\nLink: {paper.doi}")
+            open_issue_on_repo("maykcaldas/testAPI", f"New paper: {paper.title}", f"Paper: {paper.title}\n\nAuthors: {paper.authors}\n\nAbstract: {paper.abstract}\n\nLink: {paper.doi}\n\nReasoning: {pred.rationale}")
 
     # Create notion pages
 
