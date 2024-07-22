@@ -6,9 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
-# sECRETS
+# Secrets and log files
+experiments/local_cache
 *.json
 *.pickle
+*.log
 
 # Distribution / packaging
 .Python

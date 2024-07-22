@@ -3,6 +3,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import pandas as pd
+
+import sys
+sys.path.append("../arxivParser")
+
+
 from Paper import ArxivPaper
 from NotionPage import NotionPage
 from google_utils import get_arxiv_content
@@ -42,7 +47,11 @@ def main():
 
     for paper in papers:
         pred = arch_lm(title=paper.title, abstract=paper.abstract)
-        if pred.is_lm_paper.lower() == "yes" and "chemistry" in paper.abstract.lower():
+        keywords = ["chemistry", "chemical", "material", "synthesis", "reaction", "biology", "protein", "gene", "genoma"]
+        is_scientific = [word in paper.abstract.lower() for word in keywords]
+        if not any(is_scientific):
+            continue
+        if pred.is_lm_paper.lower() == "yes":
             print(f"Paper: {paper.title}\nAuthors: {paper.authors}\nAbstract: {paper.abstract}\nLink: {paper.doi}\nReasoning: {pred.rationale}")
             decision = input("Do you want to open an issue for this paper? (y/N): ")
             decision = decision.lower() if decision.lower() in ["y", "n"] else "n"
@@ -53,9 +62,9 @@ def main():
     # Create notion pages
 
     # Populate db
-    for paper in papers:
-        if not get_page_by_doi(paper.doi):
-            create_page(paper.as_dict())
+    # for paper in papers:
+    #     if not get_page_by_doi(paper.doi):
+    #         create_page(paper.as_dict())
 
 if __name__ == "__main__":
     main()
