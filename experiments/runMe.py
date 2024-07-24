@@ -43,21 +43,23 @@ def main():
     print(f"Retrieved {len(train_df)} pages from the database for training")
 
     # Process papers
-    arch_lm = get_LM(data=train_df, pipeline="classifier")
+    sci_lm = get_LM(data=train_df, pipeline="scientific-classifier")
+    arch_lm = get_LM(data=train_df, pipeline="lm-classifier")
 
     for paper in papers:
-        pred = arch_lm(title=paper.title, abstract=paper.abstract)
+        arch_pred = arch_lm(title=paper.title, abstract=paper.abstract)
+        sci_pred = sci_lm(title=paper.title, abstract=paper.abstract)
         keywords = ["chemistry", "chemical", "material", "synthesis", "reaction", "biology", "protein", "gene", "genoma"]
         is_scientific = [word in paper.abstract.lower() for word in keywords]
         if not any(is_scientific):
             continue
-        if pred.is_lm_paper.lower() == "yes":
-            print(f"Paper: {paper.title}\nAuthors: {paper.authors}\nAbstract: {paper.abstract}\nLink: {paper.doi}\nReasoning: {pred.rationale}")
+        if sci_pred.is_lm_paper.lower() == "yes" and arch_pred.is_lm_paper.lower() == "yes":
+            print(f"Paper: {paper.title}\nAuthors: {paper.authors}\nAbstract: {paper.abstract}\nLink: {paper.doi}\nReasoning: {arch_pred.rationale}")
             decision = input("Do you want to open an issue for this paper? (y/N): ")
             decision = decision.lower() if decision.lower() in ["y", "n"] else "n"
             if decision == "y":
                 # Create issue on GitHub
-                open_issue_on_repo(os.environ.get('GITHUB_REPO'), f"New paper: {paper.title}", f"Paper: {paper.title}\n\nAuthors: {paper.authors}\n\nAbstract: {paper.abstract}\n\nLink: {paper.doi}\n\nReasoning: {pred.rationale}")
+                open_issue_on_repo(os.environ.get('GITHUB_REPO'), f"New paper: {paper.title}", f"Paper: {paper.title}\n\nAuthors: {paper.authors}\n\nAbstract: {paper.abstract}\n\nLink: {paper.doi}\n\nReasoning: {arch_pred.rationale}")
 
     # Create notion pages
 
