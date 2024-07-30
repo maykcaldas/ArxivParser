@@ -15,6 +15,17 @@ def update_page(page_id, properties, database_id=os.environ.get('NOTION_DATABASE
         properties=properties
     )
 
+
+def delete_page(page_id, database_id=os.environ.get('NOTION_DATABASE_ID')):
+    notion = get_notion_service()
+    notion.pages.update(
+        page_id=page_id,
+        archived=True,
+        in_trash=True
+    )
+    print("Page deleted successfully.")
+
+
 def query_database(query, database_id=os.environ.get('NOTION_DATABASE_ID')):
     notion = get_notion_service()
     return notion.databases.query(
@@ -23,6 +34,7 @@ def query_database(query, database_id=os.environ.get('NOTION_DATABASE_ID')):
             **query
         }
     )
+
 
 def set_page_curated(page_id, database_id=os.environ.get('NOTION_DATABASE_ID')):
     notion = get_notion_service()
@@ -35,7 +47,6 @@ def set_page_curated(page_id, database_id=os.environ.get('NOTION_DATABASE_ID')):
         }
     )
     print("Page updated successfully.")
-
 
 
 def get_all_pages(database_id=os.environ.get('NOTION_DATABASE_ID')):
@@ -59,6 +70,17 @@ def get_all_curated_pages(database_id=os.environ.get('NOTION_DATABASE_ID')):
             "property": "Curated",
             "checkbox": {
                 "equals": True
+            }
+        },
+    }, database_id=database_id)['results']
+
+
+def get_all_non_curated_pages(database_id=os.environ.get('NOTION_DATABASE_ID')):
+    return query_database({
+        "filter": {
+            "property": "Curated",
+            "checkbox": {
+                "equals": False
             }
         }
     }, database_id=database_id)['results']
@@ -88,6 +110,11 @@ def get_page_by_doi(doi, database_id=os.environ.get('NOTION_DATABASE_ID')):
 
 def create_page(data, database_id=os.environ.get('NOTION_DATABASE_ID')):
     notion = get_notion_service()
+
+    # check if page exists
+    if get_page_by_doi(data['doi']):
+        print("Page already exists.")
+        return
     
     date_format = "%a, %d %b %Y %H:%M:%S %Z"
     date_obj = datetime.strptime(data['date'], date_format)
