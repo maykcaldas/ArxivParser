@@ -11,6 +11,7 @@ experiments/local_cache
 *.json
 *.pickle
 *.log
+*.pkl
 
 # Distribution / packaging
 .Python
