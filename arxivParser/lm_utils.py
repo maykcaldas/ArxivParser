@@ -18,16 +18,24 @@ class PaperClassifierSignature(dspy.Signature):
 
     title = dspy.InputField(desc="The title of an arXiv paper.")
     abstract = dspy.InputField(desc="The abstract of an arXiv paper.")
-    is_lm_paper = dspy.OutputField(desc="Prediction if the paper is about a language model. This answer should be only 'yes' or 'no'.")
+    answer = dspy.OutputField(desc="Prediction if the paper is about a language model. This answer should be only 'yes' or 'no'.")
 
 class ScientificClassifierSignature(dspy.Signature):
     """Predicts if an arXiv paper is about science."""
 
     title = dspy.InputField(desc="The title of an arXiv paper.")
     abstract = dspy.InputField(desc="The abstract of an arXiv paper.")
-    is_sci_paper = dspy.OutputField(desc="Prediction if the paper is about science. This answer should be only 'yes' or 'no'.")
+    answer = dspy.OutputField(desc="Prediction if the paper is about science. This answer should be only 'yes' or 'no'.")
 
 class ClassifierLM(dspy.Module):
+    def __init__(self, signature=PaperClassifierSignature):
+        super().__init__()
+        self.pred = dspy.Predict(signature)
+
+    def forward(self, title, abstract):
+        return self.pred(title=title, abstract=abstract)
+
+class ClassifierCOTLM(dspy.Module):
     def __init__(self, signature=PaperClassifierSignature):
         super().__init__()
         self.cot = dspy.ChainOfThought(signature)
@@ -52,26 +60,54 @@ class ArchitectureLM(dspy.Module):
     def forward(self, title, abstract):
         return self.cot(title=title, abstract=abstract)
 
-def get_LM(model='gpt-4o', data=None, pipeline = None, build_db = False):
-    pipelines={
-        'scientific-classifier': (ClassifierLM, ScientificClassifierSignature),
-        'lm-classifier': (ClassifierLM, PaperClassifierSignature),
-        'architecture': (ArchitectureLM, None)
+def get_LM(model='gpt-4o', pipeline = None, classifier=None, signature=None, data=None, build_db = False):
+    if not any([pipeline, classifier, signature]):
+        raise ValueError("At least one of pipeline, or classifier and signature should be specified.")
+    
+    if pipeline:
+        if classifier or signature:
+            raise ValueError("If pipeline is specified, classifier and signature should not be.")
+        
+        classifier = pipeline[0]
+        signature = pipeline[1]
+    
+    classifiers = {
+        "vanilla-classifier": ClassifierLM,
+        "chain-of-thought-classifier": ClassifierCOTLM
     }
 
-    if pipeline not in pipelines:
-        raise ValueError(f"Pipeline {pipeline} not found. Available pipelines: {pipelines.keys()}")
-    
-    dataset = [dspy.Example(x).with_inputs('title', 'abstract') for x in data.to_dict(orient='records')]
+    if classifier not in classifiers:
+        raise ValueError(f"Classifier {classifier} not found. Available classifiers: {classifiers.keys()}")
 
-    lm = dspy.OpenAI(model=model)
-    module, signature = pipelines[pipeline]
-    dspy.settings.configure(lm=lm)
+    signatures={
+        'scientific': ScientificClassifierSignature,
+        'lm': PaperClassifierSignature,
+        # 'architecture': (ArchitectureLM, None)
+    }
+
+    if signature not in signatures:
+        raise ValueError(f"Signature {signature} not found. Available signatures: {signatures.keys()}")
     
-    tp = LabeledFewShot(k=5)
-    # tp = BootstrapFewShotWithRandomSearch(metric=answer_exact_match)
-    bootstrap = tp.compile(module(signature), trainset=dataset)#, valset=valset)
-    return bootstrap
+    lm = dspy.OpenAI(model=model)
+    #lm = dspy.Together(model=model)
+    # dspy.settings.configure(lm=lm)
+    classifier, signature = classifiers[classifier], signatures[signature]
+
+    if data:
+        dataset = [dspy.Example(x).with_inputs('title', 'abstract') for x in data.to_dict(orient='records')]
+
+        # tp = LabeledFewShot(k=5)
+        tp = BootstrapFewShotWithRandomSearch(metric=answer_exact_match)
+        bootstrap = tp.compile(classifier(signature), 
+                               trainset=dataset[:int(0.8*len(dataset))], 
+                               valset=dataset[int(0.8*len(dataset)):]
+                               )
+        module = bootstrap
+    else:
+        module =  classifier(signature)
+
+    return lm, module
+    
 
 def main():
     ...
