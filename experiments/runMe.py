@@ -50,8 +50,8 @@ def main():
     print(f"Retrieved {len(train_df)} pages from the database for training")
 
     # Process papers
-    lm, sci_lm = get_LM(data=None, pipeline=("vanilla-classifier", "scientific"))
-    lm, arch_lm = get_LM(data=None, pipeline=("vanilla-classifier", "lm"))
+    lm, sci_lm = get_LM(data=None, pipeline=("chain-of-thought-classifier", "scientific"))
+    lm, arch_lm = get_LM(data=None, pipeline=("chain-of-thought-classifier", "lm"))
 
     to_curate = []
     for paper in papers:
@@ -64,7 +64,7 @@ def main():
         if not any(is_scientific):
             continue
         
-        if is_sci.is_sci_paper.lower() == "yes" and is_lm.is_lm_paper.lower() == "yes":
+        if is_sci.answer.lower() == "yes" and is_lm.answer.lower() == "yes":
             print(f"Paper: {paper.title}\nAuthors: {paper.authors}\nAbstract: {paper.abstract}\nLink: {paper.doi}\nReasoning: {is_lm.rationale}")
             decision = input("Do you want to open an issue for this paper? (y/N): ")
             decision = decision.lower() if decision.lower() in ["y", "n"] else "n"
@@ -72,8 +72,6 @@ def main():
                 # Create issue on GitHub
                 open_issue_on_repo(os.environ.get('GITHUB_REPO'), f"New paper: {paper.title}", f"Paper: {paper.title}\n\nAuthors: {paper.authors}\n\nAbstract: {paper.abstract}\n\nLink: {paper.doi}\n\nReasoning: {is_lm.rationale}")
 
-    
-    
     
     # Create notion pages and populate db
 

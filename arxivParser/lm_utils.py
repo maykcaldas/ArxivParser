@@ -18,14 +18,14 @@ class PaperClassifierSignature(dspy.Signature):
 
     title = dspy.InputField(desc="The title of an arXiv paper.")
     abstract = dspy.InputField(desc="The abstract of an arXiv paper.")
-    is_lm_paper = dspy.OutputField(desc="Prediction if the paper is about a language model. This answer should be only 'yes' or 'no'.")
+    answer = dspy.OutputField(desc="Prediction if the paper is about a language model. This answer should be only 'yes' or 'no'.")
 
 class ScientificClassifierSignature(dspy.Signature):
     """Predicts if an arXiv paper is about science."""
 
     title = dspy.InputField(desc="The title of an arXiv paper.")
     abstract = dspy.InputField(desc="The abstract of an arXiv paper.")
-    is_sci_paper = dspy.OutputField(desc="Prediction if the paper is about science. This answer should be only 'yes' or 'no'.")
+    answer = dspy.OutputField(desc="Prediction if the paper is about science. This answer should be only 'yes' or 'no'.")
 
 class ClassifierLM(dspy.Module):
     def __init__(self, signature=PaperClassifierSignature):
@@ -88,7 +88,7 @@ def get_LM(model='gpt-4o', pipeline = None, classifier=None, signature=None, dat
     if signature not in signatures:
         raise ValueError(f"Signature {signature} not found. Available signatures: {signatures.keys()}")
     
-    lm = dspy.OpenAI(model=model, temperature=2.0)
+    lm = dspy.OpenAI(model=model)
     #lm = dspy.Together(model=model)
     # dspy.settings.configure(lm=lm)
     classifier, signature = classifiers[classifier], signatures[signature]

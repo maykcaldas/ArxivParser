@@ -12,6 +12,7 @@ experiments/local_cache
 *.pickle
 *.log
 *.pkl
+*.ttf
 
 # Distribution / packaging
 .Python
