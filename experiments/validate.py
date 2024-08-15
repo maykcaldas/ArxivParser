@@ -9,7 +9,6 @@ load_dotenv()
 os.environ["DSP_CACHEBOOL"] = 'False'
 
 import dspy
-# import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix
 
@@ -112,7 +111,7 @@ experiments = [
   ),
 ]
 
-def run_experiment(exp: Experiment, data: pd.DataFrame):
+def run_experiment(exp: Experiment, data: pd.DataFrame, n_replicates: int = 1):
     model, classifier = exp.model, exp.classifier
     if exp.bootstrap:
       train_data = data.sample(frac=0.30)
@@ -121,21 +120,24 @@ def run_experiment(exp: Experiment, data: pd.DataFrame):
       train_data = None
       test_data = data
     
-    results = {}
-    lm, is_sci_lm = get_LM(model=model, pipeline=(classifier, "scientific"), data=train_data)
-    lm, is_lm_lm  = get_LM(model=model, pipeline=(classifier, "lm"), data=train_data)
-    for i, p in test_data.iterrows():
-      keywords = ["chemistry", "chemical", "material", "synthesis", "reaction", "biology", "protein", "gene", "genoma"]
-      is_sci_kw = any([word in p.abstract.lower() for word in keywords])
-      with dspy.context(lm=lm):
-        results[i] = {
-          "paper": p,
-          "is_sci_kw": 'yes' if is_sci_kw else 'no',
-          "is_sci_lm": is_sci_lm(title=p.title, abstract=p.abstract).answer.lower(),
-          "is_lm_lm": is_lm_lm(title=p.title, abstract=p.abstract).answer.lower()
-        }
-      # if i>2: break
-    return results
+    replicates = []
+    for n in range(n_replicates):
+      results = {}
+      lm, is_sci_lm = get_LM(model=model, pipeline=(classifier, "scientific"), data=train_data)
+      lm, is_lm_lm  = get_LM(model=model, pipeline=(classifier, "lm"), data=train_data)
+      for i, p in test_data.iterrows():
+        keywords = ["chemistry", "chemical", "material", "synthesis", "reaction", "biology", "protein", "gene", "genoma"]
+        is_sci_kw = any([word in p.abstract.lower() for word in keywords])
+        with dspy.context(lm=lm):
+          results[i] = {
+            "paper": p,
+            "is_sci_kw": 'yes' if is_sci_kw else 'no',
+            "is_sci_lm": is_sci_lm(title=p.title, abstract=p.abstract).answer.lower(),
+            "is_lm_lm": is_lm_lm(title=p.title, abstract=p.abstract).answer.lower()
+          }
+      replicates.append(results)
+        # if i>2: break
+    return replicates
 
 
 def run_experiments(experiments: List[Experiment], save_path: str):
