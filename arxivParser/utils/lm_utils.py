@@ -10,7 +10,7 @@ from dspy.evaluate import Evaluate
 from dspy.evaluate import answer_exact_match
 
 import pandas as pd
-from notion_utils import get_all_curated_pages
+from arxivParser.utils.notion_utils import get_all_curated_pages
 
 
 class PaperClassifierSignature(dspy.Signature):

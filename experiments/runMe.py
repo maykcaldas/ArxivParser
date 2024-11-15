@@ -26,11 +26,11 @@ def main():
         if n['title']:
             papers.append(ArxivPaper(
                 title=n['title'],
+                abstract=n['abstract'],
                 authors=n['authors'],
                 categories=n['categories'],
-                abstract=n['abstract'],
+                date=n['date'],
                 doi=n['doi'],
-                date=n['date']
             ))
     print(f"Found {len(papers)} papers.")
 
