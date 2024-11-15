@@ -22,7 +22,7 @@ def open_issue_on_repo(repo_name, issue_title, issue_body):
 
         if any([issue_title in i.title for i in repo.get_issues(state='all')]):
             print(f"Issue {issue_title} already exists on {repo_name}.")
-            # return False
+            return False
 
         repo.create_issue(title=issue_title, body=issue_body)
         g.close()
